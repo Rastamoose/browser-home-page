@@ -33,7 +33,19 @@
     padding: 6vh 6vw;
   }
 
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+    display: block;
+    will-change: transform;
+  }
+
   main {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 1080px;
   }
@@ -70,6 +82,7 @@
 
   .banner {
     margin: 0;
+    font-family: Georgia, ui-serif, serif;
     font-size: clamp(2rem, 5vw, 2.75rem);
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -155,6 +168,7 @@
 </style>
 </head>
 <body>
+  <canvas class="backdrop" aria-hidden="true"></canvas>
   <main>
     <div class="layout">
       <div class="art-panel">
@@ -194,6 +208,58 @@
 
   <script src="links.js"></script>
   <script>
+    (function () {
+      const canvas = document.querySelector(".backdrop");
+      const ctx = canvas.getContext("2d");
+      const FONT_SIZE = 12;
+      const CHAR_W = FONT_SIZE * 1.55;
+      const LINE_H = FONT_SIZE * 1.6;
+      const PAD_X = 32, PAD_Y = 24;
+      let rafId = null;
+
+      function draw() {
+        const dpr = window.devicePixelRatio || 1;
+        const w = window.innerWidth, h = window.innerHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.font = '400 12px "JetBrainsMonoNL Nerd Font Mono", ui-monospace, monospace';
+        ctx.textBaseline = "top";
+
+        const cols = Math.ceil((w - 2 * PAD_X) / CHAR_W) + 4;
+        const rows = Math.ceil((h - 2 * PAD_Y) / LINE_H) + 4;
+
+        const dots = [], plusses = [], marks = [];
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const hash = (r * 1747 + c * 433 + r * c * 17) % 100;
+            const x = PAD_X + c * CHAR_W;
+            const y = PAD_Y + r * LINE_H;
+            if (hash < 3) plusses.push([x, y]);
+            else if (hash < 5) marks.push([x, y, "/"]);
+            else if (hash < 7) marks.push([x, y, "─"]);
+            else dots.push([x, y]);
+          }
+        }
+
+        ctx.fillStyle = "rgba(255,255,255,0.034)";
+        for (const [x, y] of dots) ctx.fillText("·", x, y);
+
+        ctx.fillStyle = "rgba(130,170,255,0.10)";
+        for (const [x, y] of plusses) ctx.fillText("+", x, y);
+
+        ctx.fillStyle = "rgba(255,255,255,0.05)";
+        for (const [x, y, ch] of marks) ctx.fillText(ch, x, y);
+      }
+
+      draw();
+      document.fonts.ready.then(draw);
+      window.addEventListener("resize", () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(draw);
+      });
+    })();
+
     // classic Andy Sloane "donut.c" spinning torus, rendered as ASCII shading
     (function () {
       const WIDTH = 60, HEIGHT = 70;
