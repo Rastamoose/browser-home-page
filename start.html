@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>~/startpage</title>
+<style>
+  :root {
+    /* GitHub dark theme palette */
+    --bg: #0c1016;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --accent: #82aaff;
+    --heading: #a371f7;
+    --focus: #58a6ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: "JetBrainsMonoNL Nerd Font Mono", ui-monospace, monospace;
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6vh 6vw;
+  }
+
+  main {
+    width: 100%;
+    max-width: 1080px;
+  }
+
+  .layout {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .art-panel {
+    flex: 0.75 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  #donut {
+    margin: 0;
+    font-size: 1.035rem;
+    line-height: 1;
+    white-space: pre;
+    color: var(--accent);
+  }
+
+  .right-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .banner {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+
+  .clock {
+    margin: 0.3em 0 0;
+    font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+    font-weight: 700;
+    color: var(--heading);
+  }
+
+  .sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1rem 2.5rem;
+  }
+
+  section h2 {
+    margin: 0 0 0.5em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 1.3rem;
+    color: var(--heading);
+  }
+
+  section h2 .label {
+    font-weight: 700;
+  }
+
+  section h2 .icon {
+    font-size: 1.6em;
+    font-weight: 400;
+    color: var(--heading);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+  }
+
+  li a {
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.15em 0.2em;
+    border-radius: 4px;
+  }
+
+  li a::before {
+    content: "\276F";
+    color: var(--text-dim);
+    font-size: 0.75em;
+  }
+
+  li a:hover {
+    color: #f0f6fc;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  li a:hover::before {
+    color: inherit;
+  }
+
+  li a:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 480px) {
+    .sections { gap: 2rem; }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="layout">
+      <div class="art-panel">
+        <pre id="donut" aria-hidden="true"></pre>
+      </div>
+
+      <div class="right-col">
+        <div class="heading">
+          <p class="banner">Welcome $HOME!</p>
+          <p class="clock" id="clock"></p>
+        </div>
+
+        <div class="sections">
+          <section aria-labelledby="general-heading">
+            <h2 id="general-heading"><span class="label">~/general</span> <span class="icon">&#xf040;</span></h2>
+            <ul id="general-list"></ul>
+          </section>
+
+          <section aria-labelledby="audio-heading">
+            <h2 id="audio-heading"><span class="label">~/audio</span> <span class="icon">&#xf025;</span></h2>
+            <ul id="audio-list"></ul>
+          </section>
+
+          <section aria-labelledby="notes-heading">
+            <h2 id="notes-heading"><span class="label">~/notes</span> <span class="icon">&#xf249;</span></h2>
+            <ul id="notes-list"></ul>
+          </section>
+
+          <section aria-labelledby="study-heading">
+            <h2 id="study-heading"><span class="label">~/study</span> <span class="icon">&#xf02d;</span></h2>
+            <ul id="study-list"></ul>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="links.js"></script>
+  <script>
+    // classic Andy Sloane "donut.c" spinning torus, rendered as ASCII shading
+    (function () {
+      const WIDTH = 60, HEIGHT = 70;
+      const R1 = 1, R2 = 2, K2 = 5;
+      const K1 = WIDTH * K2 * 3 / (8 * (R1 + R2));
+      const donutEl = document.getElementById("donut");
+      let A = 1, B = 1;
+      let aspectCorrected = false;
+
+      function frame() {
+        A += 0.007;
+        B += 0.003;
+        const cosA = Math.cos(A), sinA = Math.sin(A);
+        const cosB = Math.cos(B), sinB = Math.sin(B);
+        const output = new Array(WIDTH * HEIGHT).fill(" ");
+        const zbuffer = new Array(WIDTH * HEIGHT).fill(0);
+
+        for (let theta = 0; theta < 6.28; theta += 0.07) {
+          const costheta = Math.cos(theta), sintheta = Math.sin(theta);
+          for (let phi = 0; phi < 6.28; phi += 0.02) {
+            const cosphi = Math.cos(phi), sinphi = Math.sin(phi);
+            const circlex = R2 + R1 * costheta;
+            const circley = R1 * sintheta;
+
+            const x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - circley * cosA * sinB;
+            const y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + circley * cosA * cosB;
+            const z = K2 + cosA * circlex * sinphi + circley * sinA;
+            const ooz = 1 / z;
+
+            const xp = Math.floor(WIDTH / 2 + K1 * ooz * x);
+            const yp = Math.floor(HEIGHT / 2 - K1 * ooz * y);
+
+            const L = cosphi * costheta * sinB - cosA * costheta * sinphi - sinA * sintheta
+              + cosB * (cosA * sintheta - costheta * sinA * sinphi);
+
+            if (xp >= 0 && xp < WIDTH && yp >= 0 && yp < HEIGHT && L > 0) {
+              const idx = xp + yp * WIDTH;
+              if (ooz > zbuffer[idx]) {
+                zbuffer[idx] = ooz;
+                const luminanceIndex = Math.floor(L * 8);
+                output[idx] = ".,-~:;=!*#$@"[luminanceIndex > 0 ? luminanceIndex : 0];
+              }
+            }
+          }
+        }
+
+        let s = "";
+        for (let j = 0; j < HEIGHT; j++) {
+          s += output.slice(j * WIDTH, (j + 1) * WIDTH).join("") + "\n";
+        }
+        donutEl.textContent = s;
+        if (!aspectCorrected) {
+          aspectCorrected = true;
+          // monospace character cells are taller than wide; squash rows back
+          // down so equal x/y extents in the math render as a true circle
+          donutEl.style.transform = `scaleY(${donutEl.scrollWidth / donutEl.scrollHeight})`;
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+
+    const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const pad = (n) => String(n).padStart(2, "0");
+
+    function tickClock() {
+      const now = new Date();
+      const day = DAYS[now.getDay()];
+      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const date = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${pad(now.getFullYear() % 100)}`;
+      document.getElementById("clock").textContent = `${day}, ${time} | ${date}`;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    function renderSection(id, items) {
+      const list = document.getElementById(id);
+      list.innerHTML = "";
+      for (const { name, url } of items) {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = url;
+        a.textContent = name;
+        li.appendChild(a);
+        list.appendChild(li);
+      }
+    }
+    renderSection("general-list", LINKS.general);
+    renderSection("audio-list", LINKS.audio);
+    renderSection("notes-list", LINKS.notes);
+    renderSection("study-list", LINKS.study);
+  </script>
+</body>
+</html>
