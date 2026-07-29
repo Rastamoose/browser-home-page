@@ -20,6 +20,6 @@ const LINKS = {
   ],
   study: [
     { name: "LeetCode", url: "https://leetcode.com/problemset/" },
-    { name: "Arabic Writing", url: "www.eoimalaga.com/ARABE/wp-content/uploads/2018/06/Write_it_in_Arabic.pdf" },
+    { name: "Arabic Writing", url: "https://www.eoimalaga.com/ARABE/wp-content/uploads/2018/06/Write_it_in_Arabic.pdf" },
   ],
 };
