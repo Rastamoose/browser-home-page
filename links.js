@@ -11,6 +11,7 @@ const LINKS = {
   audio: [
     { name: "Quran", url: "https://www.youtube.com/playlist?list=PL3xSdjugx7CZvU5C9rvnKDPcXAmVrhrho" },
     { name: "Hussary", url: "https://www.youtube.com/playlist?list=PLn8cT0DIFrRT0j9oYAqvRrmsYYfDsoMsS" },
+    { name: "Hussary Radio", url: "https://qurancentral.com/audio/mahmoud-khalil-al-husary" },
     { name: "Noise", url: "https://www.youtube.com/playlist?list=PL3xSdjugx7CYAfXfkEetrxRgL2GYhMky7" },
   ],
   notes: [
